@@ -16,6 +16,24 @@ OTT aims to be readable, strongly typed, portable across languages, and easy to 
 
 ---
 
+## 🔰 OTT-Lang vs JSON, GraphQL, gRPC, tRPC
+
+| Feature                       | 🟢 OTT-Lang | 🔵 JSON/REST | 🟣 GraphQL | 🟠 gRPC | 🟡 tRPC |
+|------------------------------|-------------|--------------|------------|---------|----------|
+| **Strong type system**       | ✅           | ❌           | ✅          | ✅       | ✅        |
+| **Unified schema file**      | ✅           | ❌           | ✅          | ✅       | ✅        |
+| **Text-based queries**       | ✅           | ❌           | ⚠️          | ❌       | ✅        |
+| **Custom actions**           | ✅           | ⚠️           | ⚠️          | ✅       | ✅        |
+| **Nested relationships**     | ✅           | ⚠️           | ✅          | ❌       | ✅        |
+| **Transport-agnostic**       | ✅           | ⚠️           | ❌          | ❌       | ⚠️        |
+| **Pagination support**       | ✅           | ✅           | ✅          | ⚠️       | ✅        |
+| **Client runtime parsing**   | ✅           | ❌           | ⚠️          | ❌       | ✅        |
+| **Code generation**          | ✅           | ⚠️           | ✅          | ✅       | ⚠️        |
+| **Human readable**           | ✅           | ⚠️           | ✅          | ❌       | ✅        |
+| **Client discoverable**      | ✅           | ❌           | ✅          | ❌       | ✅        |
+
+> ⚠️ = Possible but not standardized or requires additional setup
+
 ## 2. Motivation
 
 Existing protocols have limitations:
@@ -49,6 +67,8 @@ User(id: string; email: string; data: string | number; gender: Gender = male) {
 }
 
 Gender(male | female)
+
+Pagination(current: number; total:number; data: User[])
 ```
 
 #### 3.1.1 Extends type
