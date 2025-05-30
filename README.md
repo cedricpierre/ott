@@ -60,7 +60,7 @@ Model(id: string) {
     get(): Model
 }
 
-Model & User(id: string; email: string; data: string | number; gender: Gender = male) {
+Model & User(id: string; email: string; data: string | number; gender: male) {
   create(name: string, gender?: Gender): User
   update(name?: string): User
   ban(): void
