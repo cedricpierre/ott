@@ -1,0 +1,13 @@
+Model(id: string) {
+    delete(): void
+    create(): Model
+    get(): Model
+}
+
+Model & User(id: string; email: string; data: string | number; gender: male) {
+  create(name: string, gender?: Gender): User
+  update(name?: string): User
+  ban(): void
+}
+
+Gender(male | female)

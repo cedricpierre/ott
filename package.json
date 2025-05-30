@@ -1,0 +1,19 @@
+{
+  "name": "ott",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build:schema": "bunx peggy -o parser/ott-schema.js grammar/ott-schema.peggy",
+    "build:request": "bunx peggy -o parser/ott-request.js grammar/ott-request.peggy",
+    "build:response": "bunx peggy -o parser/ott-response.js grammar/ott-response.peggy",
+    "build": "bun run build:schema && bun run build:request && bun run build:response"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "peggy": "^5.0.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,12 @@
+User(
+  id="123",
+  email="john@example.com",
+  gender="male"
+  posts=Post(id=456),Post(id=789)
+),
+User(
+  id="456",
+  email="jane@example.com",
+  gender="female",
+  posts=Post(id=456),Post(id=789)
+)
