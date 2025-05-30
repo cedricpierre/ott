@@ -41,6 +41,26 @@ Existing protocols have limitations:
 
 ```ott
 User(id: string; email: string; data: string | number; gender: Gender = male) {
+  get()
+  create(name: string, gender?: Gender): User
+  update(name?: string): User
+  delete()
+  ban(): void
+}
+
+Gender(male | female)
+```
+
+#### 3.1.1 Extends type
+
+```ott
+Model(id: string) {
+    delete(): void
+    create(): Model
+    get(): Model
+}
+
+User(id: string; email: string; data: string | number; gender: Gender = male) & Model {
   create(name: string, gender?: Gender): User
   update(name?: string): User
   ban(): void
