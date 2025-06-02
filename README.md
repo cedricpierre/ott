@@ -59,11 +59,11 @@ Existing protocols have limitations:
 
 ```ott
 User(id: string; email: string; data: string | number; gender: Gender = male) {
-  get()
-  create(name: string, gender?: Gender): User
-  update(name?: string): User
-  delete()
-  ban(): void
+  get(),
+  create(name: string, gender?: Gender): User,
+  update(name?: string): User,
+  delete(),
+  ban(): void,
 }
 
 Gender(male | female)
@@ -80,7 +80,7 @@ Model(id: string) {
     get(): Model,
 }
 
-User & Model (id: string; email: string; data: string | number; gender: male) {
+User & Model (id: string, email: string, data: string | number, gender: male) {
   create(name: string, gender?: Gender): User,
   update(name?: string): User,
   ban(): void
