@@ -1,1 +1,2 @@
-User(id="123").posts(type="image", status="published").get()
+User(id="123").posts(type="image",status="published").get()
+Comment(Post(User(id="123"))).all(page=2,limit=10)

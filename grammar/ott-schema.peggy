@@ -1,112 +1,118 @@
 {
-  function toArray(item) {
-    return item ? [item] : [];
+  function flatten(arr) {
+    return Array.isArray(arr) ? arr.flat(Infinity) : arr;
+  }
+  
+  const interfaces = new Map();
+  
+  function getInterface(name) {
+    return interfaces.get(name);
+  }
+  
+  function registerInterface(def) {
+    interfaces.set(def.name, def);
+    return def;
   }
 
-  function mergeModelDefinitions(baseModel, derivedModel) {
-    if (!baseModel) return derivedModel;
+  function mergeAttributes(baseAttrs, derivedAttrs) {
+    const result = [...(derivedAttrs || [])];
+    const existingNames = new Set(result.map(attr => attr.name));
     
-    // Merge attributes, with derived model attributes taking precedence
-    const mergedAttributes = [...baseModel.attributes];
-    for (const attr of derivedModel.attributes) {
-      const existingIndex = mergedAttributes.findIndex(a => a.name === attr.name);
-      if (existingIndex >= 0) {
-        mergedAttributes[existingIndex] = attr; // Override with derived attribute
-      } else {
-        mergedAttributes.push(attr);
+    for (const baseAttr of (baseAttrs || [])) {
+      if (!existingNames.has(baseAttr.name)) {
+        result.push(baseAttr);
       }
     }
+    
+    return result;
+  }
 
-    // Merge actions, with derived model actions taking precedence
-    const mergedActions = [...baseModel.actions];
-    for (const action of derivedModel.actions) {
-      const existingIndex = mergedActions.findIndex(a => a.name === action.name);
-      if (existingIndex >= 0) {
-        mergedActions[existingIndex] = action; // Override with derived action
-      } else {
-        mergedActions.push(action);
+  function mergeActions(baseActions, derivedActions) {
+    const result = [...(derivedActions || [])];
+    const existingNames = new Set(result.map(action => action.name));
+    
+    for (const baseAction of (baseActions || [])) {
+      if (!existingNames.has(baseAction.name)) {
+        result.push(baseAction);
       }
     }
-
-    return {
-      ...derivedModel,
-      attributes: mergedAttributes,
-      actions: mergedActions
-    };
+    
+    return result;
   }
 }
 
-Start
-  = _ declarations:(Declaration (_ Declaration)*)? _ {
-      const models = declarations ? [declarations[0], ...declarations[1].map(d => d[1])] : [];
-      
-      // Create a map of all models for easy lookup
-      const modelMap = new Map();
-      for (const model of models) {
-        if (model.type === "ModelDefinition") {
-          modelMap.set(model.name, model);
-        }
-      }
-      
-      // Process inheritance and merge attributes/actions
-      for (const model of models) {
-        if (model.type === "ModelDefinition" && model.extends) {
-          const baseModel = modelMap.get(model.extends);
-          if (baseModel) {
-            const mergedModel = mergeModelDefinitions(baseModel, model);
-            Object.assign(model, mergedModel);
-          }
-        }
-      }
-      
-      return models;
+start
+  = _ definitions:(definition _)+ {
+      return definitions.map(d => d[0]);
     }
 
-Declaration
-  = UnionTypeDefinition
-  / ModelDefinition
+definition
+  = model
+  / interface
+  / enumDef
 
-ModelDefinition
-  = name:Identifier _ base:Inheritance? _ "(" _ attributes:AttributeList? _ ")" _ "{" _ actions:ActionList? _ "}" {
-      return {
-        type: "ModelDefinition",
+model
+  = "Model" _ "(" _ id:identifier _ ":" _ "string" _ ")" _ "{" _ actions:methodList _ "}" {
+      return registerInterface({
+        name: "Model",
+        type: "Model",
+        id,
+        attributes: [{
+          name: id,
+          type: "string",
+          required: true,
+          default: null
+        }],
+        actions
+      });
+    }
+
+interface
+  = name:identifier _ base:extendsList? _ "(" _ attrs:argList? _ ")" _ "{" _ actions:methodList _ "}" {
+      const baseInterface = base ? getInterface(base) : null;
+      if (base && !baseInterface) {
+        throw new Error(`Base interface/model "${base}" not found. Make sure it is defined before use.`);
+      }
+      const baseAttrs = baseInterface ? baseInterface.attributes || [] : [];
+      const baseActions = baseInterface ? baseInterface.actions || [] : [];
+      return registerInterface({
         name,
-        extends: base || null,
-        attributes: attributes || [],
-        actions: actions || []
+        type: baseInterface?.type || "Interface",
+        extends: base,
+        attributes: mergeAttributes(baseAttrs, attrs),
+        actions: mergeActions(baseActions, actions)
+      });
+    }
+
+extendsList
+  = _ "&" _ baseName:identifier {
+      return baseName;
+    }
+
+enumDef
+  = name:identifier _ "=" _ values:enumValues {
+      return {
+        type: "UnionType",
+        name,
+        values
       };
     }
 
-Inheritance
-  = "&" _ base:Identifier { return base; }
-
-AttributeList
-  = first:Attribute rest:(_ ";" _ Attribute)* ";"? {
+enumValues
+  = first:enumValue rest:(_ "|" _ enumValue)* {
       return [first, ...rest.map(r => r[3])];
     }
 
-Attribute
-  = name:Identifier optional:"?"? _ ":" _ type:Type _ initial:DefaultValue? {
-      return {
-        name,
-        type,
-        default: initial || null,
-        required: !optional
-      };
+enumValue
+  = "\"" val:$([a-zA-Z0-9_]+) "\"" { return val; }
+
+methodList
+  = methods:(method (_ ","? _)?)* {
+      return methods.map(m => m[0]);
     }
 
-DefaultValue
-  = _ "=" _ val:(StringLiteral / BooleanLiteral / NumberLiteral / Identifier) {
-      return val;
-    }
-
-ActionList
-  = first:Action rest:(_ Action)* {
-      return [first, ...rest.map(r => r[1])];
-    }
-
-Action
-  = name:Identifier _ "(" _ params:ParamList? _ ")" _ ":" _ returnType:Type {
+method
+  = name:identifier _ "(" _ params:argList? _ ")" _ ":" _ returnType:type {
       return {
         name,
         params: params || [],
@@ -114,58 +120,43 @@ Action
       };
     }
 
-ParamList
-  = first:Parameter rest:(_ "," _ Parameter)* {
-      return [first, ...rest.map(r => r[3])];
+argList
+  = head:argument tail:(_ "," _ argument)* {
+      return [head, ...tail.map(t => t[3])];
     }
 
-Parameter
-  = name:Identifier _ ":" _ type:Type {
-      return { name, type, required: true };
-    }
-  / name:Identifier _ "?" _ ":" _ type:Type {
-      return { name, type, required: false };
-    }
-
-UnionTypeDefinition
-  = name:Identifier _ "(" _ values:EnumValues _ ")" {
+argument
+  = name:identifier _ opt:"?"? _ ":" _ type:type defaultVal:(_ "=" _ literal)? {
       return {
-        type: "UnionTypeDefinition",
         name,
-        values
+        required: !opt,
+        type,
+        default: defaultVal ? defaultVal[3] : null
       };
     }
 
-EnumValues
-  = first:Identifier rest:(_ "|" _ Identifier)* {
-      return [first, ...rest.map(r => r[3])];
+type
+  = unionType
+
+unionType
+  = head:simpleType tail:(_ "|" _ simpleType)* {
+      return tail.length > 0 ? [head, ...tail.map(t => t[3])].join(" | ") : head;
     }
 
-Type
-  = UnionType
+simpleType
+  = identifier
 
-UnionType
-  = first:PrimaryType rest:(_ "|" _ PrimaryType)* {
-      return rest.length > 0 ? { 
-        type: "UnionTypeDefinition", 
-        name: "Union", 
-        values: [first, ...rest.map(r => r[3])] 
-      } : first;
-    }
+literal
+  = stringLiteral / numberLiteral
 
-PrimaryType
-  = Identifier
+stringLiteral
+  = "\"" chars:[^"]* "\"" { return chars.join(""); }
 
-Identifier
+numberLiteral
+  = digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+
+identifier
   = $([a-zA-Z_][a-zA-Z0-9_]*)
 
-StringLiteral
-  = '"' chars:([^"]*) '"' { return chars.join(""); }
-
-BooleanLiteral
-  = val:("true" / "false") { return val === "true"; }
-
-NumberLiteral
-  = $([0-9]+ ("." [0-9]+)?) { return parseFloat(text()); }
-
-_ = [ \t\r\n]*
+_ "whitespace"
+  = [ \t\n\r]*

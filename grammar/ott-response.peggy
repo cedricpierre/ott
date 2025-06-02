@@ -22,9 +22,21 @@ FieldList
   }
 
 Field
-  = key:Identifier _ "=" _ value:Literal
+  = key:Identifier _ "=" _ value:(Literal / ArrayLiteral)
   {
     return { key, value };
+  }
+
+ArrayLiteral
+  = "[" _ elements:ElementList? _ "]"
+  {
+    return elements || [];
+  }
+
+ElementList
+  = head:Entry tail:(_ "," _ Entry)* ","?
+  {
+    return [head, ...tail.map(t => t[3])];
   }
 
 Literal

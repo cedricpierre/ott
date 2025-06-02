@@ -1,14 +1,15 @@
 Model(id: string) {
-    delete(): void
-    create(): Model
+    delete(): void,
+    create(): Model,
     get(): Model
 }
 
-User & Model(email?: string; data: string | number; gender: Gender = male) {
-  create(name: string, gender?: Gender): User
-  update(name?: string): User
-  ban(): void
-  get(): User
+User & Model(email?: string, data: string | number, gender: Gender = "male") {
+    create(name: string, gender?: Gender): User,
+    update(name?: string): User,
+    ban(): void,
+    get(): User
+    getGender(): Gender
 }
 
-Gender(male | female)
+Gender = "male" | "female"

@@ -80,7 +80,7 @@ Model(id: string) {
     get(): Model
 }
 
-Model & User(id: string; email: string; data: string | number; gender: male) {
+User & Model (id: string; email: string; data: string | number; gender: male) {
   create(name: string, gender?: Gender): User
   update(name?: string): User
   ban(): void
@@ -121,14 +121,14 @@ Post(User(id="123"),type="image", status="published").get()
 User(
   id="123",
   email="john@example.com",
-  gender="male"
-  posts=Post(id=456),Post(id=789)
+  gender="male",
+  posts=[Post(id=456),Post(id=789)]
 ),
 User(
   id="456",
   email="jane@example.com",
   gender="female",
-  posts=Post(id=456),Post(id=789)
+  posts=[Post(id=456),Post(id=789)]
 )
 ```
 
@@ -156,8 +156,8 @@ Post(author=User(id=1), published=true).all()
 
 ```
 User(id:string) {
-  ban(): void
-  setRole(role: string | number): boolean
+  ban(): void,
+  setRole(role: string | number): boolean,
 }
 ```
 
