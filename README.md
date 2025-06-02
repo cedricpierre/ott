@@ -58,7 +58,7 @@ Existing protocols have limitations:
 ### 3.1. `.ott` — Schema
 
 ```ott
-User(id: string; email: string; data: string | number; gender: Gender = male) {
+User(id: string; email: string, data: string | number, gender: Gender = male) {
   get(),
   create(name: string, gender?: Gender): User,
   update(name?: string): User,
@@ -68,7 +68,7 @@ User(id: string; email: string; data: string | number; gender: Gender = male) {
 
 Gender(male | female)
 
-Pagination(current: number; total:number; data: User[])
+Pagination(current: number, total:number, data: User[])
 ```
 
 #### 3.1.1 Extends type
