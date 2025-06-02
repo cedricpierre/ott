@@ -75,14 +75,14 @@ Pagination(current: number; total:number; data: User[])
 
 ```ott
 Model(id: string) {
-    delete(): void
-    create(): Model
-    get(): Model
+    delete(): void,
+    create(): Model,
+    get(): Model,
 }
 
 User & Model (id: string; email: string; data: string | number; gender: male) {
-  create(name: string, gender?: Gender): User
-  update(name?: string): User
+  create(name: string, gender?: Gender): User,
+  update(name?: string): User,
   ban(): void
 }
 
@@ -122,12 +122,6 @@ User(
   id="123",
   email="john@example.com",
   gender="male",
-  posts=[Post(id=456),Post(id=789)]
-),
-User(
-  id="456",
-  email="jane@example.com",
-  gender="female",
   posts=[Post(id=456),Post(id=789)]
 )
 ```
